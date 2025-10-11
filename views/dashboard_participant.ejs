@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Participant Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f5f5f5; }
+        .event-card { transition: transform 0.2s; }
+        .event-card:hover { transform: scale(1.03); }
+        .navbar { margin-bottom: 30px; }
+        .btn-register { background-color: #4CAF50; color: white; }
+        .btn-register:hover { background-color: #45a049; }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">Smart Fest Pass</a>
+        <div class="d-flex">
+            <span class="navbar-text me-3">Hello, <%= username %>!</span>
+            <a href="/logout" class="btn btn-outline-light">Logout</a>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <h2 class="mb-4">Available Events</h2>
+    <div class="row">
+        <% events.forEach(event => { %>
+            <div class="col-md-4 mb-4">
+                <div class="card event-card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title"><%= event.event_name %></h5>
+                        <p class="card-text">
+                            📅 <strong>Date:</strong> <%= event.event_date.toLocaleString() %><br>
+                            📍 <strong>Venue:</strong> <%= event.venue %>
+                        </p>
+                        <% if (registeredEventIds.includes(event.event_id)) { %>
+    <button class="btn btn-success w-100" disabled>✅ Registered</button>
+<% } else { %>
+    <form action="/participant/register/<%= event.event_id %>" method="POST">
+        <button type="submit" class="btn btn-register w-100">Register & Get QR</button>
+    </form>
+<% } %>
+
+
+                    </div>
+                </div>
+            </div>
+        <% }) %>
+    </div>
+    <h3>Food Tokens</h3>
+<table class="table">
+  <thead>
+    <tr>
+      <th>Token Type</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% tokens.forEach(token => { %>
+      <tr>
+        <td><%= token.token_type %></td>
+        <td><%= token.stats %></td>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>
+
+</div>
+</body>
+</html>
