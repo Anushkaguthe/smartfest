@@ -50,23 +50,19 @@
             </div>
         <% }) %>
     </div>
-    <h3>Food Tokens</h3>
-<table class="table">
-  <thead>
-    <tr>
-      <th>Token Type</th>
-      <th>Status</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% tokens.forEach(token => { %>
-      <tr>
-        <td><%= token.token_type %></td>
-        <td><%= token.stats %></td>
-      </tr>
-    <% }) %>
-  </tbody>
-</table>
+    <h3 class="mb-3 text-center">Your Food QR Code / Food Token</h3>
+
+<% if (!qr) { %>
+    <form action="/generate-food-token" method="POST" class="text-center">
+        <button class="btn btn-primary">Generate QR</button>
+    </form>
+<% } else { %>
+    <div class="text-center">
+        <img src="<%= qr %>" alt="Your QR Code" class="mb-2" style="width:200px;height:200px;">
+        <p>Status: <%= tokenStatus %></p>
+    </div>
+<% } %>
+
 
 </div>
 </body>
