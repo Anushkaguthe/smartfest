@@ -78,9 +78,3 @@ This system provides:
 - Email/SMS notifications
 - Cloud deployment
 
-
-## Contributors
-
-- Anushka Guthe
-- Aanchal Hargunani
-- Aastha Ingle
