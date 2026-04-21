@@ -21,7 +21,7 @@ app.use(session({
 const db = mysql.createConnection({
     host: 'localhost',
     user: 'root',          // your MySQL username
-    password: 'anushka@124', // your MySQL password
+    password: 'utkarsha@124', // your MySQL password
     database: 'FEST'
 });
 
@@ -30,9 +30,18 @@ db.connect(err => {
     console.log('Connected to MySQL DB!');
 });
 const PORT = 3000;
+app.get('/',(req,res)=>{
+    res.render('home');
+});
 app.get('/register', (req, res) => {
     res.render('register', { error: '' });
 });
+/*async function loadAnnouncements(){
+    const announcements = await dbQuery('SELECT title, message FROM Announcement ORDER BY announcement_id DESC');
+    console.log(announcements);
+}
+loadAnnouncements();  
+*/
 // Wrap MySQL queries in a promise so we can use async/await
 function dbQuery(sql, params = []) {
     return new Promise((resolve, reject) => {
@@ -244,7 +253,7 @@ app.get('/dashboard/admin', async (req, res) => {
 const QRCode = require('qrcode');
 
 // Participant dashboard
-app.get('/dashboard/participant', async (req, res) => {
+/*app.get('/dashboard/participant', async (req, res) => {
     try {
         const user_id = req.session.userId;
         const username = req.session.username;
@@ -297,6 +306,71 @@ app.get('/dashboard/participant', async (req, res) => {
         res.send('Server error');
     }
 });
+*/
+app.get('/dashboard/participant', async (req, res) => {
+    try {
+        const user_id = req.session.userId;
+        const username = req.session.username;
+        if (!user_id) return res.redirect('/login');
+
+        // 1️⃣ Fetch participant if exists
+        const participants = await dbQuery('SELECT student_id, student_name FROM participant WHERE user_id=?', [user_id]);
+        let student_id = participants.length > 0 ? participants[0].student_id : null;
+
+        // 2️⃣ Fetch all events — always, even if student_id is null
+        const events = await dbQuery('SELECT * FROM event_s ORDER BY event_date ASC');
+
+        // 3️⃣ Fetch registered events only if participant exists
+        const registeredEventIds = student_id
+            ? (await dbQuery('SELECT event_id FROM participant_event WHERE student_id=?', [student_id])).map(e => e.event_id)
+            : [];
+
+        // 4️⃣ Fetch tokens only if participant exists
+        let tokens = [];
+let qr = null;
+let tokenStatus = null;
+
+if (student_id) {
+    // ✅ Fetch only existing tokens, do NOT insert anything
+    tokens = await dbQuery(`
+        SELECT pt.token_id, t.token_type, pt.stats, pt.token_code
+        FROM participant_token pt
+        JOIN token t ON pt.token_id = t.token_id
+        WHERE pt.student_id = ?`, [student_id]);
+
+    // Fetch only existing QR for events, do not create food token here
+    const qrResult = await dbQuery('SELECT qr_token FROM participant_qr WHERE student_id=?', [student_id]);
+    if (qrResult.length > 0) {
+        qr = `https://api.qrserver.com/v1/create-qr-code/?data=${qrResult[0].qr_token}&size=200x200`;
+    }
+
+    // tokenStatus is only for display of existing tokens
+    tokenStatus = tokens.length > 0 ? tokens[0].stats : null;
+}
+    const announcements = await dbQuery('SELECT title, message FROM Announcement ORDER BY announcement_id DESC');
+    console.log(announcements);
+    const certificates = await dbQuery('SELECT event_id,cert_type,verification_token FROM Certificate WHERE participant_id =?',[student_id]);
+
+
+        // 5️⃣ Render dashboard
+        res.render('dashboard_participant', {
+            username,
+            events,
+            registeredEventIds,
+            tokens,
+            student_id,
+            qr,
+            tokenStatus,
+            announcements,
+            certificates
+        });
+
+    } catch (err) {
+        console.error(err);
+        res.send('Server error');
+    }
+});
+
 
 // ---------- JUDGE DASHBOARD & GRADING -----------
 // Require you have dbQuery defined earlier in file (the helper Promise wrapper)
@@ -490,67 +564,6 @@ app.post('/generate-food-token', async (req, res) => {
     }
 });
 
-
-
-// Handle participant registration for an event
-/*app.post('/participant/register/:eventId', (req, res) => {
-    if (!req.session.userId) return res.redirect('/login');
-
-    const user_id = req.session.userId;
-    const event_id = req.params.eventId;
-    const { student_name, age, contact, college_id, course } = req.body;
-
-    if (!student_name || !age || !contact || !college_id) {
-        return res.render('participant_register', { error: 'Please fill all required fields' });
-    }
-
-    // 1️⃣ Check if participant already exists
-    db.query('SELECT * FROM participant WHERE user_id = ?', [user_id], (err, participantResult) => {
-        if (err) throw err;
-
-        let participant_id;
-
-        if (participantResult.length === 0) {
-            // 2️⃣ Insert new participant
-            db.query(
-                'INSERT INTO participant (user_id, student_name, age, contact, college_id, course) VALUES (?, ?, ?, ?, ?, ?)',
-                [user_id, student_name, age, contact, college_id, course || ''],
-                (err, result) => {
-                    if (err) throw err;
-                    participant_id = result.insertId;
-
-                    registerEventAndQR(participant_id, event_id, res);
-                }
-            );
-        } else {
-            // 3️⃣ Participant exists
-            participant_id = participantResult[0].student_id;
-            registerEventAndQR(participant_id, event_id, res);
-        }
-    });
-});
-*/
-app.get('/participant/register/:eventId', async (req, res) => {
-    const eventId = req.params.eventId;
-
-    try {
-        // Fetch event details
-        const events = await dbQuery('SELECT * FROM Event_s WHERE event_id = ?', [eventId]);
-        if (events.length === 0) return res.send('Event not found');
-        const event = events[0];
-
-        // Fetch colleges
-        const colleges = await dbQuery('SELECT * FROM college'); // make sure your table is 'college'
-
-        // Render registration page
-        res.render('participant_register', { event, colleges, error: '' });
-
-    } catch (err) {
-        console.error(err);
-        res.send('Server error');
-    }
-});
-
 app.post('/participant/register/:eventId', async (req, res) => {
     const eventId = req.params.eventId;
     const userId = req.session.userId;
@@ -623,6 +636,30 @@ app.post('/participant/register/:eventId', async (req, res) => {
 });
 
 
+
+app.get('/participant/register/:eventId', async (req, res) => {
+    const eventId = req.params.eventId;
+
+    try {
+        // Fetch event details
+        const events = await dbQuery('SELECT * FROM Event_s WHERE event_id = ?', [eventId]);
+        if (events.length === 0) return res.send('Event not found');
+        const event = events[0];
+
+        // Fetch colleges
+        const colleges = await dbQuery('SELECT * FROM college'); // make sure your table is 'college'
+
+        // Render registration page
+        res.render('participant_register', { event, colleges, error: '' });
+
+    } catch (err) {
+        console.error(err);
+        res.send('Server error');
+    }
+});
+
+
+
 // Helper function: register event and generate QR if not exists
 function registerEventAndQR(participant_id, event_id, res) {
     // Check if participant already registered for this event
@@ -684,6 +721,5 @@ function generateQR(participant_id, event_id, res) {
         }
     });
 }
-
 
 

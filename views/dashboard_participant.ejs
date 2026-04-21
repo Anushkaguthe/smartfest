@@ -62,6 +62,27 @@
         <p>Status: <%= tokenStatus %></p>
     </div>
 <% } %>
+    <h4>Announcements</h4>
+    <% if(announcements && announcements.length>0) { %>
+    <% announcements.forEach(a=>{ %>
+    <div class="announcement">
+        <strong><%= a.title %></strong><br>
+        <%=a.message %>
+        </div>
+        <%})%>
+    <%} else {%>
+    <p>No new announcements</p><%}%>
+    <h3>Certificates</h3>
+    <% if(certificates && certificates.length>0) { %>
+    <% certificates.forEach(a=>{ %>
+    <div class="certificate">
+        <p>Event ID: <%c.event_id %> - <%= c.cert_type%></p>
+        <a href="/verify/<%=c.verification_token %>"target = "_blank">View Certificate</a>
+    </div>
+    <%})%>
+    <%}else{%>
+        <p>No certificates available yet.</p>
+    <%}%>
 
 
 </div>
