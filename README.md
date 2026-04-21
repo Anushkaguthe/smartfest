@@ -34,17 +34,23 @@ This system provides:
 ## Screenshots
 
 - Register Page
- ./screenshots/registerPage.png
+    <img src="./screenshots/registerPage.png" width="600">
+    
 - Login Page
-    ./screenshots/loginPage.png
+    <img src="./screenshots/loginPage.png" width="600">
+
 - Participant Dashboard
-    ./screenshots/participantDashboard.png
+    <img src="./screenshots/participantDashboard.png" width="600">
+
 - QR Generation
-    ./screenshots/QRgeneration.png
+    <img src="./screenshots/QRgeneration.png" width="600">
+    
 - Judge Dashboard
-    ./screenshots/judgeDashboard.png
+    <img src="./screenshots/judgeDashboard.png" width="600">
+    
 - Food Token Generation
-    ./screenshots/FoodToken.png
+    <img src="./screenshots/FoodToken.png" width="600">
+    
 
 
 ## Database Design
