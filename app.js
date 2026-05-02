@@ -21,7 +21,7 @@ app.use(session({
 const db = mysql.createConnection({
     host: 'localhost',
     user: 'root',          // your MySQL username
-    password: 'utkarsha@124', // your MySQL password
+    password: 'yourPassword', // your MySQL password
     database: 'FEST'
 });
 
