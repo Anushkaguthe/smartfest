@@ -8,7 +8,7 @@ Traditional college fest management involves manual registrations, long queues, 
 
 ## Solution
 
-This system provides:
+This system provides:-
 
 - Online event registration.
 - QR-based digital pass generation.
